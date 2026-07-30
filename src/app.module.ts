@@ -1,5 +1,6 @@
 
 import { Module } from '@nestjs/common';
+import { AuthSharedModule } from './shared/auth/auth-shared.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -63,6 +64,7 @@ import { AppService } from './app.service';
     ScheduleModule.forRoot(),
 
     // 6. Feature and utility modules (Feature - AuthModule & UserModule), (Utility - EventsModule and EmailModule)
+    AuthSharedModule,
     UsersModule,
     ImagesModule,
     AiGenerationModule,

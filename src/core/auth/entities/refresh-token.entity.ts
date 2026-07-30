@@ -33,12 +33,11 @@ export class RefreshToken {
         deviceId?: string;
         deviceName?: string;
         location?: string;
-        usage?: {
-            lastUsedIp?: string;
-            lastUsedAt?: string;
-            usageCount?: number;
-        };
-    } | null;
+        createdAt?: string;
+        lastUsedIp?: string;
+        lastUsedAt?: string;
+        usageCount?: number;
+    };
 
     @Column({ type: 'boolean', default: false })
     revoked!: boolean;

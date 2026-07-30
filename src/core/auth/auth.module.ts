@@ -25,22 +25,20 @@ import { TokenService } from './services/refresh-token.service';
 import { SessionService } from './services/session.service';
 import { PasswordService } from './services/password.service';
 import { TwoFactorService } from './services/two-factor.service';
-import { OAuthService } from './services/0auth.service';
+import { OAuthService } from './services/oauth.service';
 import { SecurityService } from './services/security.service';
 import { OtpVerificationService } from './services/otp-verification.service';
 
 
 // Strategies
-import { JwtStrategy } from './strategies/jwt.strategy';
-import { LocalStrategy } from './strategies/local.strategy';
+import { JwtStrategy } from '../../shared/auth/strategies/jwt.strategy';
+import { LocalStrategy } from '../../shared/auth/strategies/local.strategy';
 import { RefreshStrategy } from './strategies/refresh.strategy';
-import { OAuthStrategy } from './strategies/oauth.strategy';
+import { OAuthStrategy, FacebookOAuthStrategy, GithubOAuthStrategy } from './strategies/oauth.strategy';
 
 // Guards
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { RolesGuard } from './guards/roles.guard';
+import { JwtAuthGuard, RolesGuard, RateLimitGuard } from '../../shared/auth/guards/index';
 import { TwoFactorGuard } from './guards/two-factor.guard';
-import { RateLimitGuard } from './guards/rate-limit.guard';
 
 // Decorators
 // Add custom decorators here
