@@ -1,4 +1,3 @@
-// src/shared/auth/auth-shared.module.ts
 import { Module, Global } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -12,7 +11,7 @@ import { RateLimitGuard } from './guards/rate-limit.guard';
 // Strategies
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
-import { OAuthStrategy } from './strategies/oauth.strategy';
+import { GoogleOAuthStrategy } from './strategies/oauth.strategy';
 
 // Decorators - exported from index file
 export * from './decorators/public.decorator';
@@ -44,7 +43,7 @@ export * from './decorators/current-user.decorator';
         // Strategies
         JwtStrategy,
         LocalStrategy,
-        OAuthStrategy,
+        GoogleOAuthStrategy,
     ],
     exports: [
         // Guards
@@ -55,7 +54,7 @@ export * from './decorators/current-user.decorator';
         // Strategies
         JwtStrategy,
         LocalStrategy,
-        OAuthStrategy,
+        GoogleOAuthStrategy,
         JwtModule,
     ],
 })

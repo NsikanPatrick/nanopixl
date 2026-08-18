@@ -11,7 +11,7 @@ import {
     JoinColumn,
     Index
 } from 'typeorm';
-import { User } from '../../../core/users/entities/user.entity';
+import { User } from '../../../core/auth/entities/user.entity';
 import { Image } from '../../images/entities/image.entity';
 import { GenerationImage } from '../../images/entities/image.entity';
 import { Draft } from '../../drafts/entities/draft.entity';

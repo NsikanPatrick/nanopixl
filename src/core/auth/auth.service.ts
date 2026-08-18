@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { User } from '../users/entities/user.entity'
+import { User } from './entities/user.entity'
 import { TokenService } from './services/token.service';
 import { SecurityService } from './services/security.service';
 import { OtpVerificationService } from './services/otp-verification.service';

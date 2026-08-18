@@ -8,7 +8,7 @@ import {
     JoinColumn,
     Index,
 } from 'typeorm';
-import { User } from './user.entity';
+import { User } from '../../auth/entities/user.entity';
 
 @Entity('user_preferences')
 @Index(['userId'], { unique: true })

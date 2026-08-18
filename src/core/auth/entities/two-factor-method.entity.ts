@@ -8,7 +8,7 @@ import {
     JoinColumn,
     Index,
 } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
+import { User } from './user.entity';
 
 @Entity('two_factor_methods')
 @Index(['userId', 'isPrimary'])

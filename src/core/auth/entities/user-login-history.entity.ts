@@ -7,7 +7,7 @@ import {
     JoinColumn,
     Index,
 } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
+import { User } from './user.entity';
 
 @Entity('user_login_history')
 @Index(['userId', 'createdAt'])

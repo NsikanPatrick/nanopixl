@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Request } from 'express';
 import { AuditLog } from './entities/audit-log.entity';
-import { User } from '../../core/users/entities/user.entity';
+import { User } from '../../core/auth/entities/user.entity';
 
 // Extend Express Request to include session if using express-session
 // Or use any type for the request parameter

@@ -1,4 +1,3 @@
-// src/modules/auth/auth.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
@@ -6,7 +5,7 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 // Entities
-import { User } from '../users/entities/user.entity';
+import { User } from './entities/user.entity';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { UserSession } from './entities/user-session.entity';
 import { PasswordReset } from './entities/password-reset.entity';

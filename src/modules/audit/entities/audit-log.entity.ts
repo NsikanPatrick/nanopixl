@@ -7,7 +7,7 @@ import {
     ManyToOne,
     JoinColumn,
 } from 'typeorm';
-import { User } from '../../../core/users/entities/user.entity';
+import { User } from '../../../core/auth/entities/user.entity';
 
 @Entity('audit_logs')
 @Index(['userId', 'createdAt'])
@@ -109,7 +109,7 @@ export class AuditLog {
     errorStack?: string; // Optional: Error stack trace (only in development)
 
     // ====== Timestamps ======
-    @CreateDateColumn({type: "timestamp"})
+    @CreateDateColumn({ type: "timestamp" })
     createdAt!: Date; // Non-null: Auto-generated
 
     // ====== Relations ======

@@ -7,7 +7,7 @@ import {
     JoinColumn,
     Index,
 } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
+import { User } from './user.entity';
 
 @Entity('email_verifications')
 @Index(['token'], { unique: true })

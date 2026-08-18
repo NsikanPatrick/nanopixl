@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan } from 'typeorm';
 import * as crypto from 'crypto';
 import { PasswordReset } from '../entities/password-reset.entity';
-import { User } from '../../users/entities/user.entity';
+import { User } from '../entities/user.entity';
 // import { EmailService } from '../../email/email.service'; // If you have email module
 
 @Injectable()

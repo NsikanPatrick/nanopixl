@@ -9,7 +9,7 @@ import {
     JoinColumn,
     Index,
 } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
+import { User } from './user.entity';
 
 @Entity('user_sessions')
 @Index(['userId', 'sessionToken'], { unique: true })

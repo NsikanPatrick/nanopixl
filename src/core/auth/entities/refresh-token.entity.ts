@@ -9,7 +9,7 @@ import {
     JoinColumn,
     Index,
 } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
+import { User } from './user.entity';
 
 @Entity('refresh_tokens')
 @Index(['token'], { unique: true })
@@ -25,7 +25,7 @@ export class RefreshToken {
     @Column({ type: 'varchar', length: 500, unique: true })
     token!: string;
 
-    
+
     @Column({ type: 'jsonb', nullable: true })
     metadata?: {
         ipAddress?: string;

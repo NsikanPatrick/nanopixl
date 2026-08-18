@@ -1,4 +1,3 @@
-// src/modules/auth/strategies/refresh.strategy.ts
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-custom';

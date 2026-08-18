@@ -1,4 +1,3 @@
-// src/core/dto/reset-password.dto.ts
 import { IsEmail, IsString, MinLength, MaxLength } from 'class-validator';
 
 export class ResetPasswordDto {

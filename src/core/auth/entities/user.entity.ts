@@ -20,14 +20,30 @@ import { BrandVoice } from '../../../modules/templates/entities/brand-voice.enti
 import { PlatformConnection } from '../../../modules/platforms/entities/platform-connection.entity';
 import { History } from '../../../modules/history/entities/history.entity';
 import { BatchJob } from '../../../modules/batch/entities/batch-job.entity';
-import { UserPreference } from './user-preference.entity';
+import { UserPreference } from '../../users/entities/user-preference.entity';
 // Import Auth entities
-import { RefreshToken } from '../../auth/entities/refresh-token.entity';
-import { UserSession } from '../../auth/entities/user-session.entity';
-import { PasswordReset } from '../../auth/entities/password-reset.entity';
-import { EmailVerification } from '../../auth/entities/email-verification.entity';
-import { UserLoginHistory } from '../../auth/entities/user-login-history.entity';
-import { TwoFactorMethod } from '../../auth/entities/two-factor-method.entity';
+import { RefreshToken } from './refresh-token.entity';
+import { UserSession } from './user-session.entity';
+import { PasswordReset } from './password-reset.entity';
+import { EmailVerification } from './email-verification.entity';
+import { OtpVerification } from './otp-verification.entity';
+import { UserLoginHistory } from './user-login-history.entity';
+import { TwoFactorMethod } from './two-factor-method.entity';
+
+export enum UserRole {
+    USER = 'user',
+    ADMIN = 'admin',
+    SUPER_ADMIN = 'super_admin',
+    MODERATOR = 'moderator',
+}
+
+export enum AccountStatus {
+    ACTIVE = 'active',
+    INACTIVE = 'inactive',
+    PENDING_VERIFICATION = 'pending_verification',
+    SUSPENDED = 'suspended',
+}
+
 
 @Entity('users')
 @Index(['email'], { unique: true })
@@ -68,6 +84,20 @@ export class User {
     // NEW: OAuth provider ID
     @Column({ nullable: true })
     providerId?: string; // Optional: Can be null
+
+    @Column({
+        type: 'enum',
+        enum: UserRole,
+        default: UserRole.USER
+    })
+    role!: UserRole;
+
+    @Column({
+        type: 'enum',
+        enum: AccountStatus,
+        default: AccountStatus.PENDING_VERIFICATION
+    })
+    status!: AccountStatus;
 
     @Column({
         type: 'enum',
@@ -174,6 +204,9 @@ export class User {
     @OneToMany(() => TwoFactorMethod, method => method.user)
     twoFactorMethods!: TwoFactorMethod[]; // Non-null: Will be empty array if none
 
+    @OneToMany(() => OtpVerification, otp => otp.user)
+    otpVerifications!: OtpVerification[];
+
     // Hash password before save
     @BeforeInsert()
     @BeforeUpdate()
@@ -185,6 +218,7 @@ export class User {
 
     // Utility methods
     async validatePassword(password: string): Promise<boolean> {
+        if (!this.passwordHash) return false;
         return bcrypt.compare(password, this.passwordHash);
     }
 
@@ -208,4 +242,8 @@ export class User {
         this.loginAttempts = 0;
         this.lockedUntil = null;
     }
+
+    // isEmailVerified(): boolean {
+    //     return this.emailVerifiedAt !== null || this.isEmailVerified === true;
+    // }
 }

@@ -1,10 +1,13 @@
 import {
     Entity,
     Column,
+    ManyToOne,
+    JoinColumn,
     PrimaryGeneratedColumn,
     CreateDateColumn,
     Index,
 } from 'typeorm';
+import { User } from './user.entity';
 
 @Entity('otp_verifications')
 @Index(['identifier', 'code'], { unique: true })
@@ -61,6 +64,10 @@ export class OtpVerification {
 
     @CreateDateColumn({ type: 'timestamp' })
     createdAt!: Date;
+
+    @ManyToOne(() => User, user => user.otpVerifications)
+        @JoinColumn({ name: 'userId' })
+        user!: User;
 
     // Methods
     isExpired(): boolean {

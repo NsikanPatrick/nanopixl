@@ -9,7 +9,7 @@ import {
     JoinColumn,
     Index
 } from 'typeorm';
-import { User } from '../../../core/users/entities/user.entity';
+import { User } from '../../../core/auth/entities/user.entity';
 import { Generation } from '../../ai-generation/entities/ai-generation.entity';
 
 @Entity('drafts')

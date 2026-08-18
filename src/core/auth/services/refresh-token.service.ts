@@ -5,7 +5,7 @@ import { Repository, LessThan } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { RefreshToken } from '../entities/refresh-token.entity';
-import { User } from '../../users/entities/user.entity';
+import { User } from '../entities/user.entity';
 import { UserSession } from '../entities/user-session.entity';
 
 export interface TokenPayload {
