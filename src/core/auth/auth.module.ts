@@ -34,7 +34,8 @@ import { OtpVerificationService } from './services/otp-verification.service';
 import { JwtStrategy } from '../../shared/auth/strategies/jwt.strategy';
 import { LocalStrategy } from '../../shared/auth/strategies/local.strategy';
 import { RefreshStrategy } from './strategies/refresh.strategy';
-import { OAuthStrategy, FacebookOAuthStrategy, GithubOAuthStrategy } from './strategies/oauth.strategy';
+// import { GoogleOAuthStrategy, FacebookOAuthStrategy, GithubOAuthStrategy } from '../../shared/auth/strategies/oauth.strategy'; => All oAuthStrategies from the file
+import { GoogleOAuthStrategy } from '../../shared/auth/strategies/oauth.strategy';
 
 // Guards
 import { JwtAuthGuard, RolesGuard, RateLimitGuard } from '../../shared/auth/guards/index';
@@ -85,7 +86,7 @@ import { TwoFactorGuard } from './guards/two-factor.guard';
     JwtStrategy,
     LocalStrategy,
     RefreshStrategy,
-    OAuthStrategy,
+    GoogleOAuthStrategy,
 
     // Guards
     JwtAuthGuard,

@@ -23,7 +23,7 @@ export default registerAs('appConfig', () => ({
     // },
 
     // Frontendurl Configuration
-    frontendUrl: process.env.FRONTEND_URL || 'http://localhost:2500',
+    frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3500',
 
     // Object Store Configuration (e.g S3, Cloudinary, etc)
     // objectStore: {
@@ -33,9 +33,17 @@ export default registerAs('appConfig', () => ({
     // },
 
     // Google configuration
-    // google: {
-    //     clientId: process.env.GOOGLE_CLIENT_ID,
-    //     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    // }
+    google: {
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || `${process.env.APP_URL || 'http://localhost:2000'}/auth/google/callback`,
+    },
+
+    // Facebook Configuration
+    // facebook: {
+    //     clientId: process.env.FACEBOOK_CLIENT_ID,
+    //     clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+    //     callbackURL: process.env.FACEBOOK_CALLBACK_URL || `${process.env.APP_URL || 'http://localhost:2000'}/auth/facebook/callback`,
+    // },
 
 }));
