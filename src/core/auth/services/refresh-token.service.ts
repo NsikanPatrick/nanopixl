@@ -24,7 +24,7 @@ export interface TokenResponse {
 }
 
 @Injectable()
-export class TokenService {
+export class RefreshTokenService {
     constructor(
         private jwtService: JwtService,
         private configService: ConfigService,
@@ -156,11 +156,11 @@ export class TokenService {
                 deviceId: existingMetadata.deviceId,
                 deviceName: existingMetadata.deviceName,
                 // Add additional fields as a separate nested object if needed
-                usage: {
-                    lastUsedIp: requestData.ipAddress,
-                    lastUsedAt: new Date().toISOString(),
-                    usageCount: (existingMetadata as any)?.usage?.usageCount ? (existingMetadata as any).usage.usageCount + 1 : 1,
-                },
+                // usage: {
+                //     lastUsedIp: requestData.ipAddress,
+                //     lastUsedAt: new Date().toISOString(),
+                //     usageCount: (existingMetadata as any)?.usage?.usageCount ? (existingMetadata as any).usage.usageCount + 1 : 1,
+                // },
             };
 
             await this.refreshTokenRepository.save(refreshToken);

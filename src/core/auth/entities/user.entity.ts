@@ -59,6 +59,9 @@ export class User {
     @Column({ length: 255, unique: true })
     email!: string; // Non-null: Required field
 
+    @Column({ length: 255, nullable: true })
+    profilePicture?: string; // ✅ Profile picture URL
+
     @Column({ length: 255 })
     @Exclude()
     passwordHash!: string; // Non-null: Required field

@@ -1,3 +1,2 @@
-export { OAuthStrategy } from './oauth.strategy';
-export { JwtStrategy } from './jwt.strategy';
-export { LocalStrategy } from './local.strategy';
+export { JwtStrategy } from '../../../core/auth/strategies/jwt.strategy';
+export { LocalStrategy } from '../../../core/auth/strategies/local.strategy';
