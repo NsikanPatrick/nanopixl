@@ -48,9 +48,9 @@ export class PasswordReset {
     @CreateDateColumn()
     createdAt!: Date; // Non-null: Auto-generated
 
-    @ManyToOne(() => User, user => user.passwordResets)
+    @ManyToOne(() => User, user => user.passwordResets, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'userId' })
-    user!: User; // Non-null: Always exists
+    user!: User;
 
     // Methods
     isExpired(): boolean {

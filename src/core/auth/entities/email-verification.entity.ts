@@ -53,9 +53,9 @@ export class EmailVerification {
     @CreateDateColumn()
     createdAt!: Date; // Non-null: Auto-generated
 
-    @ManyToOne(() => User, user => user.emailVerifications)
+    @ManyToOne(() => User, user => user.emailVerifications, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'userId' })
-    user!: User; // Non-null: Always exists
+    user!: User;
 
     // Methods
     isExpired(): boolean {

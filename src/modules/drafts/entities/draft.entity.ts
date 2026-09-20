@@ -76,9 +76,9 @@ export class Draft {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @ManyToOne(() => User, user => user.drafts)
+    @ManyToOne(() => User, user => user.drafts, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'userId' })
-    user: User;
+    user!: User;
 
     @ManyToOne(() => Generation, generation => generation.drafts)
     @JoinColumn({ name: 'generationId' })

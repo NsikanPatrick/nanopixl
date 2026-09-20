@@ -80,7 +80,7 @@ export class PlatformConnection {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @ManyToOne(() => User, user => user.platformConnections)
+    @ManyToOne(() => User, user => user.platformConnections, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'userId' })
-    user: User;
+    user!: User;
 }

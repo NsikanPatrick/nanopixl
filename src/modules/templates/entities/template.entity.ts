@@ -80,7 +80,7 @@ export class Template {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @ManyToOne(() => User, user => user.templates)
+    @ManyToOne(() => User, user => user.templates, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'userId' })
-    user: User;
+    user!: User;
 }

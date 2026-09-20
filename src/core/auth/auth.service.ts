@@ -33,7 +33,7 @@ export class AuthService {
   This method is called by the LocalStrategy */
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.userRepository.findOne({
-      where: { email: email.toLowerCase(), isActive: true },
+      where: { email: email.toLowerCase() },
     });
 
     if (!user) {
@@ -80,25 +80,28 @@ export class AuthService {
       passwordHash,
       firstName,
       lastName,
-      isActive: false,
-      isEmailVerified: false,
+      isActive: false, // False by default, set to true when the user logs in
+      isEmailVerified: false, // False by default, set to true when the user verifies the email
       subscriptionTier: 'free',
       loginAttempts: 0,
     });
 
     await this.userRepository.save(user);
 
+    // Activate this after implementing the emailservice
     try {
       await this.otpVerificationService.generateOtp(
         user.email,
         'email_verification',
         {
           sendEmail: true,
+             length: 6,
           expiresIn: 15,
         }
       );
     } catch (error) {
-      console.error('Failed to send verification OTP:', error);
+      console.error('Failed to send verification OTP:', error.message);
+      throw new BadRequestException('Registration succeeded, but we could not send the verification email. Please contact support.');
     }
 
     return {
@@ -111,50 +114,50 @@ export class AuthService {
   async login(loginDto: LoginDto, request: any): Promise<any> {
     const { email, password } = loginDto;
 
+    // Validate credentials
     const user = await this.validateUser(email, password);
     if (!user) {
+      // Pass null userId - SecurityService handles it
       await this.securityService.recordLoginAttempt(
         null,
-        request.ip,
-        request.headers['user-agent'],
+        request.ip || 'unknown',
+        request.headers?.['user-agent'] || 'unknown',
         false,
         'Invalid credentials'
       );
       throw new UnauthorizedException('Invalid email or password');
     }
 
+    // Check if user's email has been verified before allowing them to login
     if (!user.isEmailVerified) {
-      await this.otpVerificationService.generateOtp(
-        user.email,
-        'email_verification',
-        {
-          sendEmail: true,
-          expiresIn: 15,
-        }
+      throw new UnauthorizedException(
+        'Please verify your email first. Check your inbox for the verification code, or request a new one.'
       );
-      throw new UnauthorizedException('Please verify your email first. A new verification code has been sent.');
     }
 
-    if (user.isTwoFactorEnabled) {
-      return {
-        requireTwoFactor: true,
-        userId: user.id,
-        email: user.email,
-        message: 'Two-factor authentication required',
-      };
-    }
+    // TEMPORARILY COMMENTED OUT - 2FA check for testing
+    // if (user.isTwoFactorEnabled) {
+    //     return {
+    //         requireTwoFactor: true,
+    //         userId: user.id,
+    //         email: user.email,
+    //         message: 'Two-factor authentication required',
+    //     };
+    // }
 
+    // Generate tokens - This returns a complete json of access and refresh tokens
     const tokens = await this.tokenService.generateTokens(user, {
-      ipAddress: request.ip,
-      userAgent: request.headers['user-agent'],
-      deviceId: request.headers['x-device-id'],
-      deviceName: request.headers['x-device-name'],
+      ipAddress: request.ip || 'unknown',
+      userAgent: request.headers?.['user-agent'] || 'unknown',
+      deviceId: request.headers?.['x-device-id'],
+      deviceName: request.headers?.['x-device-name'],
     });
 
+    // Record successful login
     await this.securityService.recordLoginAttempt(
       user.id,
-      request.ip,
-      request.headers['user-agent'],
+      request.ip || 'unknown',
+      request.headers?.['user-agent'] || 'unknown',
       true
     );
 

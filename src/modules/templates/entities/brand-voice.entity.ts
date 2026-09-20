@@ -80,7 +80,7 @@ export class BrandVoice {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @OneToOne(() => User, user => user.brandVoice)
+    @OneToOne(() => User, user => user.brandVoice, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'userId' })
-    user: User;
+    user!: User;
 }

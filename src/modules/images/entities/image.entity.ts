@@ -83,9 +83,9 @@ export class Image {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @ManyToOne(() => User, user => user.images)
+    @ManyToOne(() => User, user => user.images, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'userId' })
-    user: User;
+    user!: User;
 
     @OneToMany(() => Generation, generation => generation.primaryImage)
     primaryGenerations: Generation[];

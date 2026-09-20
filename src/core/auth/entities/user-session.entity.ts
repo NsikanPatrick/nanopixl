@@ -67,7 +67,7 @@ export class UserSession {
     @UpdateDateColumn({ type: 'timestamp' })
     updatedAt!: Date;
 
-    @ManyToOne(() => User, user => user.sessions)
+    @ManyToOne(() => User, user => user.sessions, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'userId' })
     user!: User;
 

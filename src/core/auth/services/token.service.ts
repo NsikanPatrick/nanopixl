@@ -65,7 +65,7 @@ export class TokenService {
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 7); // 7 days default
 
-        // ✅ FIXED: Create refresh token with proper typing
+        // Create refresh token with proper typing
         const refreshToken = this.refreshTokenRepository.create({
             userId: user.id,
             token,
@@ -83,9 +83,7 @@ export class TokenService {
         return refreshToken;
     }
 
-    /**
-     * Generate both access and refresh tokens
-     */
+    /** FUNCTION generateTokens => GenerateS both access and refresh tokens */
     async generateTokens(
         user: User,
         sessionData?: {
@@ -164,7 +162,7 @@ export class TokenService {
         if (requestData) {
             const existingMetadata = refreshToken.metadata || {};
 
-            // ✅ FIXED: Use type assertion for metadata
+            // Use type assertion for metadata
             refreshToken.metadata = {
                 ...existingMetadata,
                 lastUsedIp: requestData.ipAddress,

@@ -63,7 +63,7 @@
     "qrcode": "^1.5.4",
     "redis": "^6.1.0",
     "reflect-metadata": "^0.2.2",
-    "resend": "^6.17.2",
+    "resend": "^6.28.1",
     "rxjs": "^7.8.1",
     "speakeasy": "^2.0.0",
     "svix": "^1.96.1",

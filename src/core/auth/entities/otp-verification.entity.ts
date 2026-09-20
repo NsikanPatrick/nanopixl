@@ -65,9 +65,9 @@ export class OtpVerification {
     @CreateDateColumn({ type: 'timestamp' })
     createdAt!: Date;
 
-    @ManyToOne(() => User, user => user.otpVerifications)
-        @JoinColumn({ name: 'userId' })
-        user!: User;
+    @ManyToOne(() => User, user => user.otpVerifications, { onDelete: 'CASCADE', nullable: true })
+    @JoinColumn({ name: 'userId' })
+    user?: User;
 
     // Methods
     isExpired(): boolean {

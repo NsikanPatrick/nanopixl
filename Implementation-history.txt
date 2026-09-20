@@ -1,0 +1,12 @@
+IMPLEMENTATION HISTORY
+
+Implemented the register service.
+
+For the login service, email verification check has been Implemented and user 
+can login, but 2fa check is not Implemented. (You may have to start from there)
+It is currently commented out the login method, but the main verifyTwoFactor
+helper method is below the login function. You may have to check and actually
+implement that functionality.
+
+After that, just go through the controller and keep implementing them one by one.
+The next one should be POST /auth/resend-verification */

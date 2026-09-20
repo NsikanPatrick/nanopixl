@@ -19,16 +19,18 @@ export class SecurityService {
      * Record a login attempt
      */
     async recordLoginAttempt(
-        userId: string | null, // Allow null for failed attempts from unknown users
+        userId: string | null,
         ipAddress: string,
         userAgent: string,
         success: boolean,
         reason?: string,
     ): Promise<void> {
+        // Only create history if userId is provided
+        // If userId is null, we still want to track the attempt but without a user reference
         const history = this.loginHistoryRepository.create({
             userId: userId || undefined, // Convert null to undefined
-            ipAddress,
-            userAgent,
+            ipAddress: ipAddress || 'unknown',
+            userAgent: userAgent || 'unknown',
             isSuccessful: success,
             failureReason: reason,
         });

@@ -107,7 +107,7 @@ export class UserPreference {
     @UpdateDateColumn()
     updatedAt!: Date; // Non-null: Auto-generated
 
-    @OneToOne(() => User, user => user.preferences)
+    @OneToOne(() => User, user => user.preferences, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'userId' })
-    user!: User; // Non-null: Always exists
+    user!: User;
 }

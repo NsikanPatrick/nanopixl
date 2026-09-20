@@ -1,7 +1,7 @@
-// src/modules/auth/services/otp-verification.service.ts
 import { Injectable, BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan } from 'typeorm';
+import { EmailService } from '../../../shared/email/email.service';
 import { OtpVerification } from '../entities/otp-verification.entity';
 
 @Injectable()
@@ -9,13 +9,11 @@ export class OtpVerificationService {
     constructor(
         @InjectRepository(OtpVerification)
         private otpRepository: Repository<OtpVerification>,
-        // private emailService: EmailService, // Optional
-        // private smsService: SmsService, // Optional
+        private emailService: EmailService, 
+        // private smsService: smsService, // Optional
     ) { }
 
-    /**
-     * Generate and send an OTP for verification
-     */
+    /** Generate and send an OTP for verification */
     async generateOtp(
         identifier: string,
         purpose: string,
@@ -23,10 +21,10 @@ export class OtpVerificationService {
             length?: number;
             expiresIn?: number; // in minutes
             sendEmail?: boolean;
-            sendSms?: boolean;
+            // sendSms?: boolean;
         }
     ): Promise<{ code: string; otp: OtpVerification }> {
-        // Rate limiting - check recent requests
+        // Rate limiting - count the number of otps generated within the last minute
         const recentOtps = await this.otpRepository.count({
             where: {
                 identifier,
@@ -35,6 +33,7 @@ export class OtpVerificationService {
             },
         });
 
+        // Through a 429 exception if d number of otps generated within d last min is more than 3 
         if (recentOtps >= 3) {
             // Using HttpException with 429 status code
             throw new HttpException(
@@ -42,7 +41,7 @@ export class OtpVerificationService {
                 HttpStatus.TOO_MANY_REQUESTS
             );
 
-            // Other Options of throwing the error
+            // Other Options of throwing the same error
             // Using ThrottlerException (if using @nestjs/throttler)
             // throw new ThrottlerException('Too many OTP requests. Please wait a moment.');
         }
@@ -71,9 +70,9 @@ export class OtpVerificationService {
         }
 
         // Send OTP via SMS if requested
-        if (options?.sendSms) {
-            await this.sendOtpSms(identifier, code);
-        }
+        // if (options?.sendSms) {
+        //     await this.sendOtpSms(identifier, code);
+        // }
 
         return { code, otp };
     }
@@ -195,18 +194,13 @@ export class OtpVerificationService {
             .padStart(length, '0');
     }
 
-    /**
-     * Send OTP via email
-     */
+    /** Send OTP via email */
     private async sendOtpEmail(identifier: string, code: string, purpose: string): Promise<void> {
-        // Implement email sending logic
-        console.log(`Sending OTP ${code} to ${identifier} for ${purpose}`);
-        // Example: await this.emailService.sendOtp(identifier, code, purpose);
+        // Implement email sending logic via d eamil service => shared/email/email.service
+        await this.emailService.sendOtpEmail(identifier, code, purpose);
     }
 
-    /**
-     * Send OTP via SMS
-     */
+    /** Send OTP via SMS */
     private async sendOtpSms(identifier: string, code: string): Promise<void> {
         // Implement SMS sending logic
         console.log(`Sending SMS OTP ${code} to ${identifier}`);

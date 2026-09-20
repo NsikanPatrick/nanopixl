@@ -11,16 +11,16 @@ export default registerAs('appConfig', () => ({
     },
 
     // Email configurations
-    // email: {
-    //     host: process.env.EMAIL_HOST || 'smtp.mailtrap.io',
-    //     port: parseInt(process.env.EMAIL_PORT || '2525', 10), // 2525 gives parseInt an initial value to avoid having an undefined before extracting from the env file
-    //     user: process.env.EMAIL_USER,
-    //     pass: process.env.EMAIL_PASS,
-    //     fromName: process.env.EMAIL_FROM_NAME || 'Vouch',
-    //     fromAddress: process.env.EMAIL_FROM_ADDRESS,
-    //     resendApiKey: process.env.RESEND_API_KEY,
-    //     webhookSecret: process.env.RESEND_WEBHOOK_SECRET,
-    // },
+    email: {
+        host: process.env.EMAIL_HOST || 'smtp.mailtrap.io',
+        port: parseInt(process.env.EMAIL_PORT || '2525', 10), // 2525 gives parseInt an initial value to avoid having an undefined before extracting from the env file
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+        fromName: process.env.EMAIL_FROM_NAME || 'NanoPixl',
+        fromAddress: process.env.EMAIL_FROM_ADDRESS,
+        resendApiKey: process.env.RESEND_API_KEY,
+        webhookSecret: process.env.RESEND_WEBHOOK_SECRET,
+    },
 
     // Frontendurl Configuration
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3500',

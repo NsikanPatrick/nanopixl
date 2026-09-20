@@ -12,6 +12,7 @@ import appConfig from './shared/config/app.config';
 
 // Import all modules
 import { UsersModule } from './core/users/users.module';
+import { EmailModule } from './shared/email/email.module';
 import { ImagesModule } from './modules/images/images.module';
 import { AiGenerationModule } from './modules/ai-generation/ai-generation.module';
 import { DraftsModule } from './modules/drafts/drafts.module';
@@ -67,6 +68,7 @@ import { AppService } from './app.service';
     // 6. Feature and utility modules (Feature - AuthModule & UserModule), (Utility - EventsModule and EmailModule)
     AuthModule,
     AuthSharedModule,
+    EmailModule,
     UsersModule,
     ImagesModule,
     AiGenerationModule,

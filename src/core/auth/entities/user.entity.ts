@@ -60,7 +60,7 @@ export class User {
     email!: string; // Non-null: Required field
 
     @Column({ length: 255, nullable: true })
-    profilePicture?: string; // ✅ Profile picture URL
+    profilePicture?: string; // Profile picture URL
 
     @Column({ length: 255 })
     @Exclude()
@@ -161,53 +161,53 @@ export class User {
     updatedAt!: Date; // Non-null: Auto-generated
 
     // Existing relations
-    @OneToMany(() => Image, image => image.user)
+    @OneToMany(() => Image, image => image.user, { cascade: true })
     images!: Image[]; // Non-null: Will be empty array if none
 
-    @OneToMany(() => Generation, generation => generation.user)
+    @OneToMany(() => Generation, generation => generation.user, { cascade: true })
     generations!: Generation[]; // Non-null: Will be empty array if none
 
-    @OneToMany(() => Draft, draft => draft.user)
+    @OneToMany(() => Draft, draft => draft.user, { cascade: true })
     drafts!: Draft[]; // Non-null: Will be empty array if none
 
-    @OneToMany(() => Template, template => template.user)
+    @OneToMany(() => Template, template => template.user, { cascade: true })
     templates!: Template[]; // Non-null: Will be empty array if none
 
-    @OneToOne(() => BrandVoice, brandVoice => brandVoice.user)
+    @OneToOne(() => BrandVoice, brandVoice => brandVoice.user, { cascade: true })
     brandVoice?: BrandVoice; // Optional: Can be null
 
-    @OneToMany(() => PlatformConnection, connection => connection.user)
+    @OneToMany(() => PlatformConnection, connection => connection.user, { cascade: true })
     platformConnections!: PlatformConnection[]; // Non-null: Will be empty array if none
 
-    @OneToMany(() => History, history => history.user)
+    @OneToMany(() => History, history => history.user, { cascade: true })
     history!: History[]; // Non-null: Will be empty array if none
 
-    @OneToMany(() => BatchJob, batchJob => batchJob.user)
+    @OneToMany(() => BatchJob, batchJob => batchJob.user, { cascade: true })
     batchJobs!: BatchJob[]; // Non-null: Will be empty array if none
 
-    @OneToOne(() => UserPreference, preference => preference.user)
+    @OneToOne(() => UserPreference, preference => preference.user, { cascade: true })
     preferences?: UserPreference; // Optional: Can be null
 
     // NEW: Auth relations
-    @OneToMany(() => RefreshToken, refreshToken => refreshToken.user)
+    @OneToMany(() => RefreshToken, refreshToken => refreshToken.user, { cascade: true })
     refreshTokens!: RefreshToken[]; // Non-null: Will be empty array if none
 
-    @OneToMany(() => UserSession, session => session.user)
+    @OneToMany(() => UserSession, session => session.user, { cascade: true })
     sessions!: UserSession[]; // Non-null: Will be empty array if none
 
-    @OneToMany(() => PasswordReset, passwordReset => passwordReset.user)
+    @OneToMany(() => PasswordReset, passwordReset => passwordReset.user, { cascade: true })
     passwordResets!: PasswordReset[]; // Non-null: Will be empty array if none
 
-    @OneToMany(() => EmailVerification, verification => verification.user)
+    @OneToMany(() => EmailVerification, verification => verification.user, { cascade: true })
     emailVerifications!: EmailVerification[]; // Non-null: Will be empty array if none
 
-    @OneToMany(() => UserLoginHistory, loginHistory => loginHistory.user)
+    @OneToMany(() => UserLoginHistory, loginHistory => loginHistory.user, { cascade: true })
     loginHistory!: UserLoginHistory[]; // Non-null: Will be empty array if none
 
-    @OneToMany(() => TwoFactorMethod, method => method.user)
+    @OneToMany(() => TwoFactorMethod, method => method.user, { cascade: true })
     twoFactorMethods!: TwoFactorMethod[]; // Non-null: Will be empty array if none
 
-    @OneToMany(() => OtpVerification, otp => otp.user)
+    @OneToMany(() => OtpVerification, otp => otp.user, { cascade: true })
     otpVerifications!: OtpVerification[];
 
     // Hash password before save

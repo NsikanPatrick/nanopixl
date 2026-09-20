@@ -62,9 +62,9 @@ export class History {
     @CreateDateColumn()
     createdAt: Date;
 
-    @ManyToOne(() => User, user => user.history)
+    @ManyToOne(() => User, user => user.history, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'userId' })
-    user: User;
+    user!: User;
 
     @ManyToOne(() => Generation, generation => generation.historyEntries)
     @JoinColumn({ name: 'generationId' })

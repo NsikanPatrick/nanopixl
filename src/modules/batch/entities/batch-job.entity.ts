@@ -95,9 +95,9 @@ export class BatchJob {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @ManyToOne(() => User, user => user.batchJobs)
+    @ManyToOne(() => User, user => user.batchJobs, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'userId' })
-    user: User;
+    user!: User;
 
     @OneToMany(() => BatchJobItem, item => item.batchJob)
     items: BatchJobItem[];

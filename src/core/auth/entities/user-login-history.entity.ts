@@ -17,8 +17,12 @@ export class UserLoginHistory {
     @PrimaryGeneratedColumn('uuid')
     id!: string; // Non-null: Always generated
 
-    @Column({ type: 'uuid' })
-    userId!: string; // Non-null: Required field
+    // @Column({ type: 'uuid' })
+    // userId!: string; // Non-null: Required field
+
+    // Make userId nullable since failed attempts from unknown users are logged
+    @Column({ type: 'uuid', nullable: true })
+    userId?: string | null;
 
     @Column({ type: 'varchar', length: 45, nullable: true })
     ipAddress?: string; // Optional: Can be null
@@ -57,9 +61,9 @@ export class UserLoginHistory {
     @CreateDateColumn({ type: 'timestamp' })
     createdAt!: Date; // Non-null: Auto-generated
 
-    @ManyToOne(() => User, user => user.loginHistory)
+    @ManyToOne(() => User, user => user.loginHistory, { onDelete: 'CASCADE', nullable: true })
     @JoinColumn({ name: 'userId' })
-    user!: User; // Non-null: Always exists
+    user?: User;
 
     // Static factory methods
     static createSuccess(userId: string, data: Partial<UserLoginHistory>): UserLoginHistory {

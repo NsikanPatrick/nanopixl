@@ -57,7 +57,7 @@ export class RefreshToken {
     @UpdateDateColumn({ type: 'timestamp' })
     updatedAt!: Date;
 
-    @ManyToOne(() => User, user => user.refreshTokens)
+    @ManyToOne(() => User, user => user.refreshTokens, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'userId' })
     user!: User;
 

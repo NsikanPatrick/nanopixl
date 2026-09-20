@@ -62,9 +62,9 @@ export class TwoFactorMethod {
     @UpdateDateColumn({ type: 'timestamp' })
     updatedAt!: Date; // Non-null: Auto-generated
 
-    @ManyToOne(() => User, user => user.twoFactorMethods)
+    @ManyToOne(() => User, user => user.twoFactorMethods, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'userId' })
-    user!: User; // Non-null: Always exists
+    user!: User;
 
     // Methods
     markAsVerified(): void {
