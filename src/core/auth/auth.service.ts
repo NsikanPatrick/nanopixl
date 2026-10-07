@@ -137,6 +137,17 @@ export class AuthService {
 
     // TEMPORARILY COMMENTED OUT - 2FA check for testing
     // if (user.isTwoFactorEnabled) {
+    //   const twoFactorToken = this.jwtService.sign(
+    //     { sub: user.id, purpose: '2fa' },
+    //     { secret: this.configService.get('JWT_2FA_SECRET'), expiresIn: '5m' },
+    //   );
+    //   return {
+    //     requireTwoFactor: true,
+    //     twoFactorToken,           // ← client sends this back
+    //     message: 'Two-factor authentication required',
+    //   };
+    // }
+    // if (user.isTwoFactorEnabled) {
     //     return {
     //         requireTwoFactor: true,
     //         userId: user.id,

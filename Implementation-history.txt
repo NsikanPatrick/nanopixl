@@ -1,5 +1,7 @@
 IMPLEMENTATION HISTORY
 
+2FA Check is temporarily commented out in the login function because it is not implemented
+
 Implemented the register service.
 
 For the login service, email verification check has been Implemented and user 
