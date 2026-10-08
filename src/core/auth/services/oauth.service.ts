@@ -25,20 +25,29 @@ export class OAuthService {
         let user = await this.userRepository.findOne({
             where: [
                 { providerId: id, provider },
-                { email }
+                { email },
             ],
         });
 
-        // If user exists but doesn't have provider ID set, update it
+        // Existing user found by email but no provider linked yet → link it
         if (user && !user.providerId) {
             user.providerId = id;
             user.provider = provider;
             user.isEmailVerified = true;
+
+            // Preserve the OAuth avatar in metadata if the user has no upload yet
+            if (photos?.[0]?.value && !user.metadata?.oauthAvatarUrl) {
+                user.metadata = {
+                    ...(user.metadata ?? {}),
+                    oauthAvatarUrl: photos[0].value,
+                };
+            }
+
             await this.userRepository.save(user);
             return user;
         }
 
-        // If user doesn't exist, create new user
+        // Brand new user via OAuth
         if (!user) {
             user = this.userRepository.create({
                 email,
@@ -47,7 +56,9 @@ export class OAuthService {
                 lastName: displayName?.split(' ').slice(1).join(' ') || '',
                 provider,
                 providerId: id,
-                avatarUrl: photos?.[0]?.value,
+                metadata: {
+                    oauthAvatarUrl: photos?.[0]?.value,
+                },
                 isEmailVerified: true,
                 isActive: true,
                 subscriptionTier: 'free',
@@ -57,7 +68,7 @@ export class OAuthService {
             return user;
         }
 
-        // User found - ensure email is verified
+        // Existing user — make sure email is verified
         if (!user.isEmailVerified) {
             user.isEmailVerified = true;
             await this.userRepository.save(user);
@@ -124,8 +135,8 @@ export class OAuthService {
         user.isEmailVerified = true;
 
         // Update avatar if not set
-        if (!user.avatarUrl && photos?.[0]?.value) {
-            user.avatarUrl = photos[0].value;
+        if (!user.profilePicture && photos?.[0]?.value) {
+            user.profilePicture = photos[0].value;
         }
 
         await this.userRepository.save(user);

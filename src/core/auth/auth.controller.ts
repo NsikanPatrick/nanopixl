@@ -152,7 +152,7 @@ export class AuthController {
   }
 
   // ==================== PROTECTED ENDPOINTS ====================
-
+  // In these set, Access token will be provided as authorization>Bearer Token
   /* ================== Logout user ======================
   
   POST /auth/logout */
@@ -168,17 +168,19 @@ export class AuthController {
 
   /* ================== Get current user profile =================
   
-  GET /auth/me */
-  @Get('me')
+  GET /auth/profile */
+  @Get('profile')
   @UseGuards(JwtAuthGuard)
   async getProfile(@CurrentUser() user: User) {
-    return this.authService.getUserById(user.id);
+    // return this.authService.getUserById(user.id);
+    const profile = await this.authService.getUserById(user.id);
+    return { ...profile, displayAvatar: (profile as User)?.displayAvatar };
   }
 
   /* ================== Update user profile ===================
   
-  PUT /auth/profile */
-  @Put('profile')
+  PATCH /auth/profile */
+  @Patch('profile')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   @HttpCode(HttpStatus.OK)

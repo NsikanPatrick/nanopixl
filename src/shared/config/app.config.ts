@@ -26,11 +26,11 @@ export default registerAs('appConfig', () => ({
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3500',
 
     // Object Store Configuration (e.g S3, Cloudinary, etc)
-    // objectStore: {
-    //     cloudName: process.env.OBJECT_STORE_CLOUD_NAME,
-    //     apiKey: process.env.OBJECT_STORE_API_KEY,
-    //     apiSecret: process.env.OBJECT_STORE_API_SECRET,
-    // },
+    objectStore: {
+        cloudName: process.env.OBJECT_STORE_CLOUD_NAME,
+        apiKey: process.env.OBJECT_STORE_API_KEY,
+        apiSecret: process.env.OBJECT_STORE_API_SECRET,
+    },
 
     // Google configuration
     google: {

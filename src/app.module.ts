@@ -13,6 +13,7 @@ import appConfig from './shared/config/app.config';
 // Import all modules
 import { UsersModule } from './core/users/users.module';
 import { EmailModule } from './shared/email/email.module';
+import { FileUploadModule } from './shared/file-upload/file-upload.module';
 import { ImagesModule } from './modules/images/images.module';
 import { AiGenerationModule } from './modules/ai-generation/ai-generation.module';
 import { DraftsModule } from './modules/drafts/drafts.module';
@@ -69,6 +70,7 @@ import { AppService } from './app.service';
     AuthModule,
     AuthSharedModule,
     EmailModule,
+    FileUploadModule,
     UsersModule,
     ImagesModule,
     AiGenerationModule,

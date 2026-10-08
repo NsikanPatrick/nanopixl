@@ -11,4 +11,17 @@ helper method is below the login function. You may have to check and actually
 implement that functionality.
 
 After that, just go through the controller and keep implementing them one by one.
-The next one should be POST /auth/resend-verification */
+The next one should be POST /auth/change-password */
+
+
+
+
+FEATURES THAT WILL NEED BACKGROUND JOB:
+
+Welcome email after registration → EventEmitter is fine
+
+AI generation from an uploaded image → BullMQ (long, expensive, retriable)
+
+Batch CSV uploads → BullMQ
+
+Scheduled cleanup (expired OTPs) → your @nestjs/schedule cron, or BullMQ repeatable jobs if you go multi-instance

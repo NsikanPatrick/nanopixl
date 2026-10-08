@@ -6,6 +6,7 @@ import { Multer } from 'multer';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { User, UserRole, AccountStatus } from './entities/user.entity';
+import { FileUploadService } from '../../shared/file-upload/file-upload.service';
 import { TokenService } from './services/token.service';
 import { SecurityService } from './services/security.service';
 import { OtpVerificationService } from './services/otp-verification.service';
@@ -15,6 +16,8 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { OtpRequestDto } from './dto/otp-request.dto';
 import { OtpVerifyDto } from './dto/otp-verify.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+// Limits the fields exposed to only non-sensitive ones
+import { sanitizeUser } from './utils/sanitize-user.util';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -26,6 +29,7 @@ export class AuthService {
     private securityService: SecurityService,
     private otpVerificationService: OtpVerificationService,
     private configService: ConfigService,
+    private fileUploadService: FileUploadService,
   ) { }
 
   /* ================== Validate user credentials for local strategy =========
@@ -95,7 +99,7 @@ export class AuthService {
         'email_verification',
         {
           sendEmail: true,
-             length: 6,
+          length: 6,
           expiresIn: 15,
         }
       );
@@ -353,13 +357,18 @@ export class AuthService {
   }
 
   /* ================== Get user by ID ====================== */
-  async getUserById(id: string): Promise<User | null> {
-    return this.userRepository.findOne({ where: { id } });
+  // async getUserById(id: string): Promise<User | null> {
+  //   return this.userRepository.findOne({ where: { id } });
+  // }
+  async getUserById(id: string): Promise<Omit<User, 'passwordHash'> | null> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    return user ? sanitizeUser(user) : null;
   }
 
   /* ================== Get user by email ====================== */
-  async getUserByEmail(email: string): Promise<User | null> {
-    return this.userRepository.findOne({ where: { email: email.toLowerCase() } });
+  async getUserByEmail(email: string): Promise<Omit<User, 'passwordHash'> | null> {
+    const user = await this.userRepository.findOne({ where: { email: email.toLowerCase() } });
+    return user ? sanitizeUser(user) : null;
   }
 
   /* ================== Change password ====================== */
@@ -469,201 +478,251 @@ export class AuthService {
   }
 
   /* ================== Update user profile ====================== */
+  // async updateProfile(
+  //   userId: string,
+  //   updateProfileDto: UpdateProfileDto,
+  //   file?: Express.Multer.File
+  // ): Promise<{ message: string; user: any }> {
+  //   const user = await this.userRepository.findOne({ where: { id: userId } });
+  //   if (!user) {
+  //     throw new NotFoundException('User not found');
+  //   }
+
+  //   // Update fields if provided
+  //   if (updateProfileDto.username) {
+  //     user.username = updateProfileDto.username;
+  //   }
+  //   if (updateProfileDto.firstName) {
+  //     user.firstName = updateProfileDto.firstName;
+  //   }
+  //   if (updateProfileDto.lastName) {
+  //     user.lastName = updateProfileDto.lastName;
+  //   }
+  //   if (updateProfileDto.profilePicture) {
+  //     user.profilePicture = updateProfileDto.profilePicture;
+  //   }
+  //   // if (updateProfileDto.avatarUrl) {
+  //   //   user.avatarUrl = updateProfileDto.avatarUrl;
+  //   // }
+  //   if (updateProfileDto.bio) {
+  //     user.metadata = {
+  //       ...user.metadata,
+  //       bio: updateProfileDto.bio,
+  //     };
+  //   }
+
+  //   // Handle file upload if provided
+  //   if (file) {
+  //     // You can integrate your file upload service here
+  //     // user.profilePicture = await this.fileUploadService.uploadFile(file);
+  //   }
+
+  //   const updatedUser = await this.userRepository.save(user);
+
+  //   const { passwordHash, ...result } = updatedUser;
+  //   return {
+  //     message: 'Profile updated successfully',
+  //     user: result,
+  //   };
+  // }
+
   async updateProfile(
     userId: string,
     updateProfileDto: UpdateProfileDto,
-    file?: Express.Multer.File
+    file?: Express.Multer.File,
   ): Promise<{ message: string; user: any }> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    // Update fields if provided
-    if (updateProfileDto.username) {
-      user.username = updateProfileDto.username;
-    }
-    if (updateProfileDto.firstName) {
-      user.firstName = updateProfileDto.firstName;
-    }
-    if (updateProfileDto.lastName) {
-      user.lastName = updateProfileDto.lastName;
-    }
-    if (updateProfileDto.profilePicture) {
-      user.profilePicture = updateProfileDto.profilePicture;
-    }
-    if (updateProfileDto.avatarUrl) {
-      user.avatarUrl = updateProfileDto.avatarUrl;
-    }
-    if (updateProfileDto.bio) {
+    // ── 1. Textual fields ──────────────────────────────────────────
+    if (updateProfileDto.username) user.username = updateProfileDto.username;
+    if (updateProfileDto.firstName) user.firstName = updateProfileDto.firstName;
+    if (updateProfileDto.lastName) user.lastName = updateProfileDto.lastName;
+
+    if (updateProfileDto.bio !== undefined) {
       user.metadata = {
-        ...user.metadata,
+        ...(user.metadata ?? {}),
         bio: updateProfileDto.bio,
       };
     }
 
-    // Handle file upload if provided
+    // ── 2. File upload (Upload the file to object store BEFORE the DB write) ───────────────
     if (file) {
-      // You can integrate your file upload service here
-      // user.profilePicture = await this.fileUploadService.uploadFile(file);
+      const { url, publicId } = await this.fileUploadService.uploadImage(
+        file,
+        'nanopixl/profile_pictures',
+      );
+
+      // Delete the previous avatar, if any
+      if (user.objectStorePublicId) {
+        await this.fileUploadService.deleteImage(user.objectStorePublicId);
+      }
+
+      user.profilePicture = url;
+      user.objectStorePublicId = publicId;
     }
 
+    // ── 3. Single DB write ─────────────────────────────────────────
     const updatedUser = await this.userRepository.save(user);
 
-    const { passwordHash, ...result } = updatedUser;
+    // ── 4. Sanitize response (Remove sensitive fields from response) ────────────────
+    const { passwordHash, twoFactorSecret, twoFactorBackupCodes, ...safe } = updatedUser;
     return {
       message: 'Profile updated successfully',
-      user: result,
+      user: safe,
     };
+
   }
 
   /* ================== Create admin user (Admin only) =================== */
-  async createAdmin(registerDto: RegisterDto, creatorId: string): Promise<{ message: string; user: any }> {
-    const creator = await this.userRepository.findOne({ where: { id: creatorId } });
-    if (!creator || creator.role !== UserRole.ADMIN) {
-      throw new UnauthorizedException('Only admins can create admin accounts');
-    }
+  async createAdmin(registerDto: RegisterDto, creatorId: string): Promise < { message: string; user: any } > {
+  const creator = await this.userRepository.findOne({ where: { id: creatorId } });
+  if(!creator || creator.role !== UserRole.ADMIN) {
+  throw new UnauthorizedException('Only admins can create admin accounts');
+}
 
-    const existingUser = await this.userRepository.findOne({
-      where: { email: registerDto.email.toLowerCase() },
-    });
+const existingUser = await this.userRepository.findOne({
+  where: { email: registerDto.email.toLowerCase() },
+});
 
-    if (existingUser) {
-      throw new ConflictException('User with this email already exists');
-    }
+if (existingUser) {
+  throw new ConflictException('User with this email already exists');
+}
 
-    const saltRounds = parseInt(this.configService.get('BCRYPT_ROUNDS') || '10');
-    const passwordHash = await bcrypt.hash(registerDto.password, saltRounds);
+const saltRounds = parseInt(this.configService.get('BCRYPT_ROUNDS') || '10');
+const passwordHash = await bcrypt.hash(registerDto.password, saltRounds);
 
-    const newAdmin = this.userRepository.create({
-      email: registerDto.email.toLowerCase(),
-      username: registerDto.username || registerDto.email.split('@')[0],
-      passwordHash,
-      firstName: registerDto.firstName,
-      lastName: registerDto.lastName,
-      role: UserRole.ADMIN,
-      status: AccountStatus.ACTIVE,
-      isActive: true,
-      isEmailVerified: true,
-      subscriptionTier: 'free',
-    });
+const newAdmin = this.userRepository.create({
+  email: registerDto.email.toLowerCase(),
+  username: registerDto.username || registerDto.email.split('@')[0],
+  passwordHash,
+  firstName: registerDto.firstName,
+  lastName: registerDto.lastName,
+  role: UserRole.ADMIN,
+  status: AccountStatus.ACTIVE,
+  isActive: true,
+  isEmailVerified: true,
+  subscriptionTier: 'free',
+});
 
-    const savedAdmin = await this.userRepository.save(newAdmin);
+const savedAdmin = await this.userRepository.save(newAdmin);
 
-    const { passwordHash: _, ...result } = savedAdmin;
-    return {
-      message: 'Admin user created successfully',
-      user: result,
-    };
+const { passwordHash: _, ...result } = savedAdmin;
+return {
+  message: 'Admin user created successfully',
+  user: result,
+};
   }
 
   /* ================== Get all users with pagination (Admin only) ========= */
-  async getAllUsers(page: number = 1, limit: number = 10): Promise<any> {
-    const skip = (page - 1) * limit;
+  async getAllUsers(page: number = 1, limit: number = 10): Promise < any > {
+  const skip = (page - 1) * limit;
 
-    const [users, total] = await this.userRepository.findAndCount({
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        status: true,
-        isActive: true,
-        isEmailVerified: true,
-        createdAt: true,
-        lastLoginAt: true,
-        profilePicture: true,
-      },
-      skip,
-      take: limit,
-      order: {
-        createdAt: 'DESC',
-      },
-    });
+  const [users, total] = await this.userRepository.findAndCount({
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      firstName: true,
+      lastName: true,
+      role: true,
+      status: true,
+      isActive: true,
+      isEmailVerified: true,
+      createdAt: true,
+      lastLoginAt: true,
+      profilePicture: true,
+    },
+    skip,
+    take: limit,
+    order: {
+      createdAt: 'DESC',
+    },
+  });
 
-    return {
-      users,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    };
-  }
+  return {
+    users,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
+}
 
   /* ================== Update user status (Admin only) =================== */
-  async updateUserStatus(userId: string, status: string): Promise<{ message: string; user: any }> {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+  async updateUserStatus(userId: string, status: string): Promise < { message: string; user: any } > {
+  const user = await this.userRepository.findOne({ where: { id: userId } });
+  if(!user) {
+    throw new NotFoundException('User not found');
+  }
 
     // Validate status
-    if (!Object.values(AccountStatus).includes(status as AccountStatus)) {
-      throw new BadRequestException('Invalid status');
-    }
+    if(!Object.values(AccountStatus).includes(status as AccountStatus)) {
+  throw new BadRequestException('Invalid status');
+}
 
-    user.status = status as AccountStatus;
-    if (status === AccountStatus.ACTIVE) {
-      user.isActive = true;
-    } else if (status === AccountStatus.INACTIVE || status === AccountStatus.SUSPENDED) {
-      user.isActive = false;
-    }
+user.status = status as AccountStatus;
+if (status === AccountStatus.ACTIVE) {
+  user.isActive = true;
+} else if (status === AccountStatus.INACTIVE || status === AccountStatus.SUSPENDED) {
+  user.isActive = false;
+}
 
-    const updatedUser = await this.userRepository.save(user);
+const updatedUser = await this.userRepository.save(user);
 
-    const { passwordHash, ...result } = updatedUser;
-    return {
-      message: `User status updated to ${status}`,
-      user: result,
-    };
+const { passwordHash, ...result } = updatedUser;
+return {
+  message: `User status updated to ${status}`,
+  user: result,
+};
   }
 
   /* ================== Update user role (Admin only) =================== */
-  async updateUserRole(userId: string, role: string, adminId: string): Promise<{ message: string; user: any }> {
-    // Prevent admin from changing their own role
-    if (userId === adminId) {
-      throw new BadRequestException('You cannot change your own role');
-    }
+  async updateUserRole(userId: string, role: string, adminId: string): Promise < { message: string; user: any } > {
+  // Prevent admin from changing their own role
+  if(userId === adminId) {
+  throw new BadRequestException('You cannot change your own role');
+}
 
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+const user = await this.userRepository.findOne({ where: { id: userId } });
+if (!user) {
+  throw new NotFoundException('User not found');
+}
 
-    // Validate role
-    if (!Object.values(UserRole).includes(role as UserRole)) {
-      throw new BadRequestException('Invalid role');
-    }
+// Validate role
+if (!Object.values(UserRole).includes(role as UserRole)) {
+  throw new BadRequestException('Invalid role');
+}
 
-    user.role = role as UserRole;
-    const updatedUser = await this.userRepository.save(user);
+user.role = role as UserRole;
+const updatedUser = await this.userRepository.save(user);
 
-    const { passwordHash, ...result } = updatedUser;
-    return {
-      message: `User role updated to ${role} successfully`,
-      user: result,
-    };
+const { passwordHash, ...result } = updatedUser;
+return {
+  message: `User role updated to ${role} successfully`,
+  user: result,
+};
   }
 
   /* ================== Delete user (Admin only) ===================== */
-  async deleteUser(userId: string, adminId: string): Promise<{ message: string }> {
-    // Prevent admin from deleting themselves
-    if (userId === adminId) {
-      throw new BadRequestException('You cannot delete your own account');
-    }
+  async deleteUser(userId: string, adminId: string): Promise < { message: string } > {
+  // Prevent admin from deleting themselves
+  if(userId === adminId) {
+  throw new BadRequestException('You cannot delete your own account');
+}
 
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+const user = await this.userRepository.findOne({ where: { id: userId } });
+if (!user) {
+  throw new NotFoundException('User not found');
+}
 
-    // Hard delete the user
-    await this.userRepository.remove(user);
+// Hard delete the user
+await this.userRepository.remove(user);
 
-    return {
-      message: 'User account deleted successfully',
-    };
+return {
+  message: 'User account deleted successfully',
+};
   }
 }

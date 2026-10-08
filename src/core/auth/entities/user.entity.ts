@@ -59,8 +59,13 @@ export class User {
     @Column({ length: 255, unique: true })
     email!: string; // Non-null: Required field
 
-    @Column({ length: 255, nullable: true })
+    // Single profile image column
+    @Column({ length: 500, nullable: true })
     profilePicture?: string; // Profile picture URL
+
+    // Cloudinary public ID — required to delete/replace the asset
+    @Column({ length: 255, nullable: true })
+    objectStorePublicId?: string; // Cloudinary public ID 
 
     @Column({ length: 255 })
     @Exclude()
@@ -72,11 +77,7 @@ export class User {
     @Column({ length: 100, nullable: true })
     lastName?: string; // Optional: Can be null
 
-    // NEW: Added avatar URL for user profile
-    @Column({ length: 255, nullable: true })
-    avatarUrl?: string; // Optional: Can be null
-
-    // NEW: Added OAuth support
+    // Added OAuth support
     @Column({
         type: 'enum',
         enum: ['email', 'google', 'facebook', 'github', 'apple'],
@@ -84,7 +85,7 @@ export class User {
     })
     provider!: string; // Non-null: Has default
 
-    // NEW: OAuth provider ID
+    // OAuth provider ID
     @Column({ nullable: true })
     providerId?: string; // Optional: Can be null
 
@@ -112,42 +113,42 @@ export class User {
     @Column({ default: true })
     isActive!: boolean; // Non-null: Has default
 
-    // NEW: Email verification status
+    // Email verification status
     @Column({ default: false })
     isEmailVerified!: boolean; // Non-null: Has default
 
-    // NEW: Two-factor authentication status
+    // Two-factor authentication status
     @Column({ default: false })
     isTwoFactorEnabled!: boolean; // Non-null: Has default
 
-    // NEW: Two-factor secret (encrypted)
+    // Two-factor secret (encrypted)
     @Column({ nullable: true })
     twoFactorSecret?: string; // Optional: Can be null
 
-    // NEW: Two-factor backup codes (encrypted)
+    // Two-factor backup codes (encrypted)
     @Column({ type: 'jsonb', nullable: true })
     twoFactorBackupCodes?: string[]; // Optional: Can be null
 
     @Column({ type: 'timestamp', nullable: true })
     lastLoginAt?: Date; // Optional: Can be null
 
-    // NEW: Last login IP for security
+    // Last login IP for security
     @Column({ nullable: true })
     lastLoginIp?: string; // Optional: Can be null
 
-    // NEW: Last login user agent for device tracking
+    // Last login user agent for device tracking
     @Column({ nullable: true })
     lastLoginUserAgent?: string; // Optional: Can be null
 
-    // NEW: Login attempts for rate limiting
+    // Login attempts for rate limiting
     @Column({ type: 'int', default: 0 })
     loginAttempts!: number; // Non-null: Has default
 
-    // NEW: Account lockout until date
+    // Account lockout until date
     @Column({ type: 'timestamp', nullable: true })
     lockedUntil: Date | null; // Optional: Can be null
 
-    // NEW: Soft delete support
+    // Soft delete support
     @Column({ type: 'timestamp', nullable: true })
     deletedAt?: Date; // Optional: Can be null
 
@@ -188,7 +189,7 @@ export class User {
     @OneToOne(() => UserPreference, preference => preference.user, { cascade: true })
     preferences?: UserPreference; // Optional: Can be null
 
-    // NEW: Auth relations
+    // Auth relations
     @OneToMany(() => RefreshToken, refreshToken => refreshToken.user, { cascade: true })
     refreshTokens!: RefreshToken[]; // Non-null: Will be empty array if none
 
@@ -229,6 +230,31 @@ export class User {
         return `${this.firstName || ''} ${this.lastName || ''}`.trim() || this.username;
     }
 
+    /**
+    * Avatar Getter function: Returns the best available avatar URL.
+    * Priority:
+    *   1. User-uploaded profilePicture (Cloudinary URL)
+    *   2. OAuth-provided avatar (stored in metadata during OAuth signup)
+    *   3. Deterministic initials avatar (ui-avatars.com)
+    *
+    * Never returns null, so the frontend can always render <img src={displayAvatar} />.
+    */
+    // Call => user.displayAvatar No parenthesis
+    get displayAvatar(): string {
+        if (this.profilePicture) {
+            return this.profilePicture;
+        }
+
+        const oauthAvatar = this.metadata?.oauthAvatarUrl as string | undefined;
+        if (oauthAvatar) {
+            return oauthAvatar;
+        }
+
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            this.fullName,
+        )}&size=200&background=random`;
+    }
+
     isLocked(): boolean {
         if (!this.lockedUntil) return false;
         return new Date() < this.lockedUntil;
@@ -245,8 +271,4 @@ export class User {
         this.loginAttempts = 0;
         this.lockedUntil = null;
     }
-
-    // isEmailVerified(): boolean {
-    //     return this.emailVerifiedAt !== null || this.isEmailVerified === true;
-    // }
 }

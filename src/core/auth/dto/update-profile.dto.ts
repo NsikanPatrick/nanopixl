@@ -19,18 +19,14 @@ export class UpdateProfileDto {
     @MaxLength(50, { message: 'Last name must not exceed 50 characters' })
     lastName?: string;
 
-    @IsString()
-    @IsOptional()
-    @IsUrl({}, { message: 'Profile picture must be a valid URL' })
-    profilePicture?: string;
+    // @IsString()
+    // @IsOptional()
+    // @IsUrl({}, { message: 'Profile picture must be a valid URL' })
+    // profilePicture?: string;
 
     @IsString()
     @IsOptional()
     @MaxLength(500, { message: 'Bio must not exceed 500 characters' })
     bio?: string;
 
-    @IsString()
-    @IsOptional()
-    @MaxLength(255, { message: 'Avatar URL must not exceed 255 characters' })
-    avatarUrl?: string;
 }
