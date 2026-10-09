@@ -478,54 +478,6 @@ export class AuthService {
   }
 
   /* ================== Update user profile ====================== */
-  // async updateProfile(
-  //   userId: string,
-  //   updateProfileDto: UpdateProfileDto,
-  //   file?: Express.Multer.File
-  // ): Promise<{ message: string; user: any }> {
-  //   const user = await this.userRepository.findOne({ where: { id: userId } });
-  //   if (!user) {
-  //     throw new NotFoundException('User not found');
-  //   }
-
-  //   // Update fields if provided
-  //   if (updateProfileDto.username) {
-  //     user.username = updateProfileDto.username;
-  //   }
-  //   if (updateProfileDto.firstName) {
-  //     user.firstName = updateProfileDto.firstName;
-  //   }
-  //   if (updateProfileDto.lastName) {
-  //     user.lastName = updateProfileDto.lastName;
-  //   }
-  //   if (updateProfileDto.profilePicture) {
-  //     user.profilePicture = updateProfileDto.profilePicture;
-  //   }
-  //   // if (updateProfileDto.avatarUrl) {
-  //   //   user.avatarUrl = updateProfileDto.avatarUrl;
-  //   // }
-  //   if (updateProfileDto.bio) {
-  //     user.metadata = {
-  //       ...user.metadata,
-  //       bio: updateProfileDto.bio,
-  //     };
-  //   }
-
-  //   // Handle file upload if provided
-  //   if (file) {
-  //     // You can integrate your file upload service here
-  //     // user.profilePicture = await this.fileUploadService.uploadFile(file);
-  //   }
-
-  //   const updatedUser = await this.userRepository.save(user);
-
-  //   const { passwordHash, ...result } = updatedUser;
-  //   return {
-  //     message: 'Profile updated successfully',
-  //     user: result,
-  //   };
-  // }
-
   async updateProfile(
     userId: string,
     updateProfileDto: UpdateProfileDto,
