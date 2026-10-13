@@ -5,7 +5,7 @@ import { Repository, LessThan } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { RefreshToken } from '../entities/refresh-token.entity';
-import { User } from '../entities/user.entity';
+import { User, UserRole } from '../entities/user.entity';
 import { UserSession } from '../entities/user-session.entity';
 import { TokenPayload, TokenResponse, TokenGenerationOptions } from '../interfaces/token-payload.interface';
 
@@ -31,20 +31,13 @@ export class TokenService {
             sub: user.id,
             email: user.email,
             username: user.username,
-            roles: [user.subscriptionTier],
+            roles: [user.role],
             permissions: this.getUserPermissions(user),
             subscriptionTier: user.subscriptionTier,
         };
 
         const expiresIn = options?.expiresIn || this.configService.get('JWT_EXPIRATION') || '15m';
 
-        // Option 1: Sign with payload and options => Did not work
-        // return this.jwtService.sign(payload, {
-        //     expiresIn: expiresIn,
-        //     issuer: options?.issuer || 'NanoPixl',
-        // });
-
-        // Option 2: If the above still doesn't work, try this:
         return this.jwtService.sign(payload);
     }
 
@@ -117,7 +110,7 @@ export class TokenService {
                 id: user.id,
                 email: user.email,
                 username: user.username,
-                roles: [user.subscriptionTier],
+                roles: [user.role],
                 permissions: this.getUserPermissions(user),
             },
         };
@@ -199,7 +192,7 @@ export class TokenService {
                     id: refreshToken.user.id,
                     email: refreshToken.user.email,
                     username: refreshToken.user.username,
-                    roles: [refreshToken.user.subscriptionTier],
+                    roles: [refreshToken.user.role],
                     permissions: this.getUserPermissions(refreshToken.user),
                 },
             };
@@ -215,7 +208,7 @@ export class TokenService {
                 id: refreshToken.user.id,
                 email: refreshToken.user.email,
                 username: refreshToken.user.username,
-                roles: [refreshToken.user.subscriptionTier],
+                roles: [refreshToken.user.role],
                 permissions: this.getUserPermissions(refreshToken.user),
             },
         };
@@ -425,6 +418,10 @@ export class TokenService {
      * Get user permissions based on subscription and roles
      */
     private getUserPermissions(user: User): string[] {
+        if (user.role === UserRole.ADMIN || user.role === UserRole.SUPER_ADMIN) {
+            return ['*'];
+        }
+        
         const permissions: string[] = [];
 
         // Base permissions for all users

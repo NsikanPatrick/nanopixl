@@ -153,6 +153,8 @@ export class AuthController {
 
   // ==================== PROTECTED ENDPOINTS ====================
   // In these set, Access token will be provided as authorization>Bearer Token
+
+  // Verify the content of your jwt tokens by copying your access token and pasting on jwt.io. It will decode all the content of the access jwt token
   /* ================== Logout user ======================
   
   POST /auth/logout */
@@ -226,11 +228,10 @@ export class AuthController {
   // ==================== ADMIN ONLY ENDPOINTS ====================
 
   /* ================== Create admin user (Admin only) ====================
-  
   POST /auth/admin/create */
   @Post('admin/create')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN) // Only users with admin privileges accesses this route. So the RolesGuard unpacks the signed JWT payload and checks the roles array. This role was sent via the jwtstrategy
   @HttpCode(HttpStatus.CREATED)
   async createAdmin(
     @Body() registerDto: RegisterDto,
