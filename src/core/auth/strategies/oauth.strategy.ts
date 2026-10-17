@@ -39,15 +39,8 @@ export class GoogleOAuthStrategy extends PassportStrategy(Strategy, 'google') {
     ): Promise<any> {
         try {
             const user = await this.oauthService.validateOAuthLogin(profile, 'google');
-
-            // Pass user if found, otherwise pass false
-            if (user) {
-                done(null, user);
-            } else {
-                done(new Error('User not found or could not be created'), false);
-            }
+            done(null, user);
         } catch (error) {
-            // Pass false instead of null for the user parameter
             done(error, false);
         }
     }

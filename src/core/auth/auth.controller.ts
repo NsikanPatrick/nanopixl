@@ -17,7 +17,9 @@ import {
   Patch,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Response } from 'express';
+import type { Response } from 'express';
+import { ConfigService } from '@nestjs/config';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from '../../core/auth/auth.service';
 import {
   RegisterDto,
@@ -39,7 +41,9 @@ import { User, UserRole } from '../../core/auth/entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) { }
 
   // ==================== PUBLIC ENDPOINTS ====================
 
@@ -149,6 +153,53 @@ export class AuthController {
       otpVerifyDto.code,
       req,
     );
+  }
+
+  // ==================== OAUTH (GOOGLE) ====================
+
+  /* ================== Initiate Google OAuth flow ==================
+  GET /auth/google
+  Redirects the browser to Google's consent screen. */
+  @Public()
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth() {
+    // Never called — Passport intercepts and redirects before this runs.
+  }
+
+  /* ================== Google OAuth callback ====================
+ GET /auth/google/callback
+ Google redirects here automatically after consent. The strategy validates and
+ attaches the user to req.user. We then mint JWTs and redirect
+ back to the frontend. */
+  @Public()
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthCallback(@Req() req: any, @Res() res: Response) {
+    try {
+      const tokens = await this.authService.handleOAuthLogin(req.user, req);
+
+      const frontendUrl =
+        this.configService.get<string>('appConfig.frontendUrl') ||
+        'http://localhost:3500';
+
+      // Redirect to the frontend with tokens in the query string.
+      const redirectUrl = new URL(`${frontendUrl}/auth/callback`);
+      redirectUrl.searchParams.set('accessToken', tokens.accessToken);
+      redirectUrl.searchParams.set('refreshToken', tokens.refreshToken);
+
+      return res.redirect(redirectUrl.toString());
+    } catch (error) {
+      const frontendUrl =
+        this.configService.get<string>('appConfig.frontendUrl') ||
+        'http://localhost:3500';
+
+      // Let the frontend show the error instead of a raw JSON blob
+      const redirectUrl = new URL(`${frontendUrl}/auth/callback`);
+      redirectUrl.searchParams.set('error', error.message || 'oauth_failed');
+
+      return res.redirect(redirectUrl.toString());
+    }
   }
 
   // ==================== PROTECTED ENDPOINTS ====================

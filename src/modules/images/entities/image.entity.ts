@@ -1,4 +1,3 @@
-// src/modules/images/entities/image.entity.ts
 import {
     Entity,
     Column,
@@ -14,44 +13,47 @@ import { User } from '../../../core/auth/entities/user.entity';
 import { Generation } from '../../../modules/ai-generation/entities/ai-generation.entity';
 
 @Entity('images')
-@Index(['userId', 'hash'])
+@Index(['userId', 'hash'], { unique: true }) 
 @Index(['userId', 'createdAt'])
 export class Image {
     @PrimaryGeneratedColumn('uuid')
-    id: string;
+    id!: string;
 
     @Column({ type: 'uuid' })
-    userId: string;
+    userId!: string;
 
     @Column({ length: 255 })
-    originalName: string;
+    originalName!: string;
 
     @Column({ length: 500 })
-    storagePath: string;
+    storagePath!: string; // Cloudinary url
+
+    @Column({ length: 255, nullable: true })
+    publicId?: string;             // Cloudinary public_id — for delete/replace
 
     @Column({ length: 500, nullable: true })
-    thumbnailPath: string;
+    thumbnailPath?: string;
 
     @Column({ length: 500, nullable: true })
-    compressedPath: string;
+    compressedPath?: string;
 
     @Column({ length: 50 })
-    mimeType: string;
+    mimeType!: string;
 
     @Column({ type: 'int' })
-    sizeBytes: number;
+    sizeBytes!: number;
 
     @Column({ type: 'int' })
-    width: number;
+    width!: number;
 
     @Column({ type: 'int' })
-    height: number;
+    height!: number;
 
-    @Column({ length: 64, unique: true })
-    hash: string; // Perceptual hash for deduplication (caching)
+    @Column({ length: 64 }) //@Index(['userId', 'hash']) We use Index Because we dont want two different images to produce the same hash
+    hash!: string; // Perceptual hash for deduplication (caching)
 
     @Column({ type: 'jsonb', nullable: true })
-    exifData: {
+    exifData?: {
         orientation?: number;
         make?: string;
         model?: string;
@@ -61,7 +63,7 @@ export class Image {
     };
 
     @Column({ type: 'jsonb', nullable: true })
-    processingData: {
+    processingData?: {
         orientationCorrected?: boolean;
         compressed?: boolean;
         cropApplied?: boolean;
@@ -69,19 +71,19 @@ export class Image {
     };
 
     @Column({ default: false })
-    isProcessed: boolean;
+    isProcessed!: boolean;
 
     @Column({ nullable: true })
     processedAt: Date;
 
     @Column({ type: 'jsonb', nullable: true })
-    metadata: Record<string, any>;
+    metadata?: Record<string, any>;
 
     @CreateDateColumn()
-    createdAt: Date;
+    createdAt?: Date;
 
     @UpdateDateColumn()
-    updatedAt: Date;
+    updatedAt?: Date;
 
     @ManyToOne(() => User, user => user.images, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'userId' })

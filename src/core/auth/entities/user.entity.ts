@@ -67,7 +67,7 @@ export class User {
     @Column({ length: 255, nullable: true })
     objectStorePublicId?: string; // Cloudinary public ID 
 
-    @Column({ length: 255 })
+    @Column({ length: 255, nullable: true })
     @Exclude()
     passwordHash!: string; // Non-null: Required field
 

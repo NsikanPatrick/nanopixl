@@ -333,6 +333,51 @@ export class AuthService {
     };
   }
 
+  /* ======================== 0Auth (Google login) ========================= */
+  /**
+   * Issue JWT tokens after a successful OAuth login.
+   * Reuses the same token generation path as password login so the response 
+   * shape is identical — the frontend doesn't need OAuth-specific handling.
+   * Creating a separate function for the 0Auth is cleaner than plastering it
+   * into the login function */
+  async handleOAuthLogin(user: User, request: any) {
+    // Guard against inactive accounts, same as password login
+    if (!user.isActive) {
+      throw new UnauthorizedException('Account is inactive');
+    }
+
+    const tokens = await this.tokenService.generateTokens(user, {
+      ipAddress: request.ip || 'unknown',
+      userAgent: request.headers?.['user-agent'] || 'unknown',
+      deviceId: request.headers?.['x-device-id'],
+      deviceName: request.headers?.['x-device-name'],
+    });
+
+    await this.securityService.recordLoginAttempt(
+      user.id,
+      request.ip || 'unknown',
+      request.headers?.['user-agent'] || 'unknown',
+      true,
+      'OAuth login via google',
+    );
+
+    return {
+      ...tokens,
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profilePicture: user.profilePicture,
+        subscriptionTier: user.subscriptionTier,
+        isEmailVerified: user.isEmailVerified,
+        isTwoFactorEnabled: user.isTwoFactorEnabled,
+        provider: user.provider,
+      },
+    };
+  }
+
   /* ======================== Logout user ========================= */
   async logout(userId: string, refreshToken?: string): Promise<{ message: string }> {
     await this.tokenService.revokeAllUserRefreshTokens(userId, 'User logout');
