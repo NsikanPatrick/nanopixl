@@ -35,6 +35,9 @@ import { GoogleOAuthStrategy } from './strategies/oauth.strategy';
 // Guards
 import { TwoFactorGuard } from './guards/two-factor.guard';
 
+// Modules
+import { ImagesModule } from '../../modules/images/images.module';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -50,6 +53,7 @@ import { TwoFactorGuard } from './guards/two-factor.guard';
       OtpVerification,
     ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
+    ImagesModule,
   ],
   controllers: [AuthController],
   providers: [

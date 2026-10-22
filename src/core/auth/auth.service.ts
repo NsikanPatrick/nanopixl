@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThan, IsNull } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { User, UserRole, AccountStatus } from './entities/user.entity';
 import { FileUploadService } from '../../shared/file-upload/file-upload.service';
+import { ImagesService } from '../../modules/images/images.service';
 import { TokenService } from './services/token.service';
 import { SecurityService } from './services/security.service';
 import { OtpVerificationService } from './services/otp-verification.service';
@@ -22,6 +23,8 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
@@ -30,6 +33,7 @@ export class AuthService {
     private otpVerificationService: OtpVerificationService,
     private configService: ConfigService,
     private fileUploadService: FileUploadService,
+    private imagesService: ImagesService,
   ) { }
 
   /* ================== Validate user credentials for local strategy =========
@@ -704,22 +708,90 @@ export class AuthService {
   }
 
   /* ================== Delete user (Admin only) ===================== */
+  /** Delete a user and all their associated Cloudinary assets.
+ 
+ * Order of operation:
+ *   1. Validate (self-delete, user exists)
+ *   2. Delete Cloudinary assets — requires publicIds from the DB
+ *   3. Delete the user row — cascades to images, tokens, sessions, etc.
+ *
+ * If Cloudinary cleanup fails, we still proceed with the DB delete.
+ * Orphaned assets are less harmful than a user who can't be deleted.
+ */
   async deleteUser(userId: string, adminId: string): Promise<{ message: string }> {
-    // Prevent admin from deleting themselves
+    // 1. Guards
     if (userId === adminId) {
       throw new BadRequestException('You cannot delete your own account');
     }
 
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        profilePicture: true,
+        objectStorePublicId: true,
+      },
+    });
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    // Hard delete the user
+    // 2. Delete all Cloudinary assets belonging to this user's image gallery.
+    //    removeAllForUser() fetches publicIds, bulk-deletes from Cloudinary,
+    //    then wipes the DB rows. It's idempotent and handles "no images".
+    try {
+      const { deleted } = await this.imagesService.removeAllForUser(userId);
+      this.logger.log(
+        `Deleted ${deleted} gallery images for user ${user.username} (${userId})`,
+      );
+    } catch (error) {
+      // Don't block the account deletion on a Cloudinary hiccup.
+      // Orphaned assets are a cleanup job; a stuck account is worse.
+      this.logger.warn(
+        `Failed to clean up gallery images for user ${userId}: ${error.message}`,
+      );
+    }
+
+    // 3. Delete the user's profile picture (separate from gallery images).
+    if (user.objectStorePublicId) {
+      try {
+        await this.fileUploadService.deleteImage(user.objectStorePublicId);
+      } catch (error) {
+        this.logger.warn(
+          `Failed to delete profile picture for user ${userId}: ${error.message}`,
+        );
+      }
+    }
+
+    // 4. Remove the user row. Cascade deletes remaining related rows.
     await this.userRepository.remove(user);
 
+    this.logger.log(`User ${user.username} (${userId}) deleted by admin ${adminId}`);
+
     return {
-      message: 'User account deleted successfully',
+      message: `User account "${user.username}" deleted successfully`,
     };
   }
+
+  // async deleteUser(userId: string, adminId: string): Promise<{ message: string }> {
+  //   // Prevent admin from deleting themselves
+  //   if (userId === adminId) {
+  //     throw new BadRequestException('You cannot delete your own account');
+  //   }
+
+  //   const user = await this.userRepository.findOne({ where: { id: userId } });
+  //   if (!user) {
+  //     throw new NotFoundException('User not found');
+  //   }
+
+  //   // Hard delete the user
+  //   await this.userRepository.remove(user);
+
+  //   return {
+  //     message: 'User account deleted successfully',
+  //   };
+  // }
 }
