@@ -34,7 +34,9 @@ import { AppService } from './app.service';
     ConfigModule.forRoot({
       load: [databaseConfig, appConfig],
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: process.env.NODE_ENV === 'test'
+        ? '.env.test'
+        : '.env',
     }),
 
     // 2. Rate Limiting -> 10 req/min

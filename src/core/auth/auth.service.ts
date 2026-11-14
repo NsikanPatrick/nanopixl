@@ -164,8 +164,14 @@ export class AuthService {
     //     };
     // }
 
+    // Re-fetch the full entity so TypeORM has the proper reference for relations
+    const fullUser = await this.userRepository.findOne({ where: { id: user.id } });
+    if (!fullUser) {
+      throw new UnauthorizedException('User not found');
+    }
+
     // Generate tokens - This returns a complete json of access and refresh tokens
-    const tokens = await this.tokenService.generateTokens(user, {
+    const tokens = await this.tokenService.generateTokens(fullUser, {
       ipAddress: request.ip || 'unknown',
       userAgent: request.headers?.['user-agent'] || 'unknown',
       deviceId: request.headers?.['x-device-id'],
@@ -174,7 +180,7 @@ export class AuthService {
 
     // Record successful login
     await this.securityService.recordLoginAttempt(
-      user.id,
+      fullUser.id,
       request.ip || 'unknown',
       request.headers?.['user-agent'] || 'unknown',
       true
@@ -183,14 +189,14 @@ export class AuthService {
     return {
       ...tokens,
       user: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        subscriptionTier: user.subscriptionTier,
-        isEmailVerified: user.isEmailVerified,
-        isTwoFactorEnabled: user.isTwoFactorEnabled,
+        id: fullUser.id,
+        email: fullUser.email,
+        username: fullUser.username,
+        firstName: fullUser.firstName,
+        lastName: fullUser.lastName,
+        subscriptionTier: fullUser.subscriptionTier,
+        isEmailVerified: fullUser.isEmailVerified,
+        isTwoFactorEnabled: fullUser.isTwoFactorEnabled,
       },
     };
   }
@@ -424,7 +430,7 @@ export class AuthService {
   async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<{ message: string }> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new NotFoundException('User not found');
     }
 
     const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
