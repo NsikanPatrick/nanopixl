@@ -34,6 +34,7 @@ describe('ImagesService', () => {
       uploadImage: jest.fn(),
       deleteImage: jest.fn(),
       deleteImages: jest.fn(),
+      deleteFolder: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
