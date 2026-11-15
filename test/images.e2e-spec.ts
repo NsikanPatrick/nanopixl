@@ -26,7 +26,7 @@ describe('Images (E2E)', () => {
     // Create a dummy image file buffer for testing 
     let dummyImageBuffer: Buffer;
 
-    // (a 1x1 transparent PNG) - The 1x1 didnt work because the service expected 400x400
+    // (a 1x1 transparent PNG) - The 1x1 didnt work because the service expected 500x500
     // const dummyImageBuffer = Buffer.from(
     //     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
     //     'base64'
