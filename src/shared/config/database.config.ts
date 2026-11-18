@@ -20,6 +20,7 @@ export const databaseConfig = registerAs('database', (): TypeOrmModuleOptions =>
     },
     retryAttempts: 5,
     retryDelay: 3000,
+    
 }));
 
 
